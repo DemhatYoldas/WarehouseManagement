@@ -1,0 +1,70 @@
+# ÇALIŞMA RAPORU — Akıllı Depo Yönetimi
+
+## Ne Yapıldı?
+
+Akıllı Depo Yönetim Sistemi sıfırdan geliştirildi. Sistem;
+- Ürün tanımlama (barkod, kategori, birim tipi, son kullanma tarihi)
+- Depo bölümü ve raf yönetimi
+- Stok giriş/çıkış işlemleri
+- Barkod ile anlık stok sorgulama
+- Dashboard ile özet bilgi kartları
+
+işlevlerini kapsamaktadır.
+
+## Kullanılan Teknolojiler
+
+| Katman | Teknoloji | Versiyon |
+|---|---|---|
+| Backend | ASP.NET Core Web API | .NET 9.0 |
+| Frontend | React + TypeScript | React 18, Vite 8 |
+| UI Kütüphanesi | Material-UI (MUI) | v7 |
+| Veritabanı | MS SQL Server | LocalDB |
+| ORM | Entity Framework Core | 9.0 |
+| HTTP Client | Axios | latest |
+
+## Mimari Kararlar
+
+**Katmanlı Mimari:** Controller → Manager → Repository → Entity (DbContext) yapısı uygulandı.
+
+**Multi-Tenant:** Her entity'de `CompanyId` alanı bulunmaktadır. Tüm sorgular CompanyId ile filtrelenir, farklı şirket verileri birbirine karışmaz.
+
+**Soft Delete:** Silme işlemlerinde kayıtlar fiziksel olarak silinmez, `IsDeleted = true` yapılır. DbContext'te global query filter ile silinmiş kayıtlar otomatik gizlenir.
+
+**Server-Side Pagination:** Listeleme endpoint'lerinde tüm veri gönderilmez. `Skip/Take` ile sayfa bazlı veri döndürülür. Varsayılan sayfa boyutu 25'tir.
+
+**HTTP Metod Kuralları:** Production kuralları gereği PUT ve DELETE metodları kullanılmadı. Tüm işlemler GET ve POST ile yapıldı.
+
+**EntityState.Modified:** Tüm güncelleme işlemlerinde `_context.Entry(entity).State = EntityState.Modified` kullanıldı.
+
+**CORS:** Frontend (localhost:5173) ile backend (localhost:5294) arasındaki iletişim için CORS policy tanımlandı.
+
+**JSON Döngüsel Referans:** Entity ilişkilerinden kaynaklanan döngüsel JSON hatası `ReferenceHandler.IgnoreCycles` ile çözüldü.
+
+## Özellikler
+
+- 4 haneli sayısal barkod sistemi
+- Son kullanma tarihine göre renk uyarısı (30 gün → yeşil, 15 gün → turuncu, 7 gün → kırmızı)
+- Adet / Kilo / Koli birim desteği (koli için adet/koli tanımı)
+- Barkod ile anlık ürün ve stok sorgulama
+- Bölüm ve raf hiyerarşisi (R1 → Raf 1, Raf 2 vb.)
+- Stok giriş/çıkış hareketi takibi
+- Dashboard özet kartları
+
+## Karşılaşılan Sorunlar ve Çözümler
+
+| Sorun | Çözüm |
+|---|---|
+| JSON döngüsel referans hatası | ReferenceHandler.IgnoreCycles eklendi |
+| CORS hatası | Program.cs'e WithOrigins policy eklendi |
+| MUI v7 uyumsuzluğu | Grid item → Grid size, inputProps → slotProps olarak güncellendi |
+| AddControllers çift tanımlama | Program.cs tek bir AddControllers çağrısında birleştirildi |
+
+## Yapay Zeka Kullanımı
+
+Proje geliştirme sürecinin tamamında Claude (Anthropic) yapay zeka aracından yararlanıldı:
+- Backend mimari yapısı ve entity tasarımı
+- Repository, Manager ve Controller katmanlarının kodlanması
+- Frontend bileşenlerinin oluşturulması
+- Hata ayıklama ve sorun çözme süreçleri
+
+Kullanılan tüm teknolojiler, framework'ler ve yöntemler bilinmekte ve anlaşılmaktadır.
